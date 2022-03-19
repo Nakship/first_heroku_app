@@ -8,6 +8,12 @@ app.use(cors())
 //In order to access the data easily, we need the help of the express json-parser that is taken to use with command app.use(express.json()).
 app.use(express.json())
 
+
+//To make express show static content, the page index.html and the JavaScript, etc., it fetches, we need a built-in middleware from express called static.
+app.use(express.static('build'))
+
+
+
 let notes = [
     {
       id: 1,
