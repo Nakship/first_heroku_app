@@ -1,6 +1,10 @@
+require('dotenv').config() //The environment variables defined in the .env file, you can reference them in your code just like you would reference normal environment variables
+
 const express = require('express') // importing express(library), which this time is a function that is used to create an express application stored in the app variable
 /*const http = require('http') //  application imports Node's built-in web server module*/
 const app = express()
+
+const Note = require('./models/note') // importing the mongo db connection model that I created on models/note.js
 
 const cors = require('cors') // We can allow requests from other 'origins' by using Node's cors middleware.
 app.use(cors())
@@ -12,28 +16,6 @@ app.use(express.json())
 //To make express show static content, the page index.html and the JavaScript, etc., it fetches, we need a built-in middleware from express called static.
 app.use(express.static('build'))
 
-
-
-let notes = [
-    {
-      id: 1,
-      content: "HTML is easy",
-      date: "2022-05-30T17:30:31.098Z",
-      important: true
-    },
-    {
-      id: 2,
-      content: "Browser can execute only Javascript",
-      date: "2022-05-30T18:39:34.091Z",
-      important: false
-    },
-    {
-      id: 3,
-      content: "GET and POST are the most important methods of HTTP protocol",
-      date: "2022-05-30T19:20:14.298Z",
-      important: true
-    }
-]
 
 /*
 // 'createServer' method of the http module to create a new web server.
@@ -52,7 +34,7 @@ const app = http.createServer((request, response) => {
 //This first one defines an event handler that is used to handle HTTP GET requests made to the application's / root
 //The event handler function accepts two parameters. The first request parameter contains all of the information of the HTTP request, and the second response parameter is used to define how the request is responded to.
 app.get('/', (request, response) => {
-    response.send('<h1>Hello World!</h1>')
+    response.send('')
 })
 
 //This second route defines an event handler that handles HTTP GET requests made to the notes path of the application
@@ -60,7 +42,13 @@ app.get('/', (request, response) => {
 //Calling the method will send the notes array that was passed to it as a JSON formatted string.
 //Express automatically sets the Content-Type header with the appropriate value of application/json.
 app.get('/api/notes', (request, response) => {
+
+  // Fetching objects from the database
+  //The parameter of the method is an object expressing search conditions. Since the parameter is an empty object{}, we get all of the notes stored in the notes collection
+  Note.find({}).then(notes => {
     response.json(notes)
+  })
+
 })
 
 app.get('/api/notes/:id', (request, response) => {
@@ -95,7 +83,6 @@ app.post('/api/notes', (request,response)=> {
     })
   }
 
-   
   const note = {
     content: body.content,
     important: body.important || false, //If the data saved in the body variable has the important property, the expression will evaluate to its value. If the property does not exist, then the expression will evaluate to false which is defined on the right-hand side of the vertical lines.
@@ -104,9 +91,9 @@ app.post('/api/notes', (request,response)=> {
   }
 
   notes = notes.concat(note)
-
   response.json(note)
 }) 
+
 
 app.delete('/api/notes/:id', (request, response) => {
   const id = Number(request.params.id)
@@ -116,8 +103,9 @@ app.delete('/api/notes/:id', (request, response) => {
   response.status(204).end()
 })
 
+
 //These last rows bind the http server assigned to the app variable, to listen to HTTP requests sent to the port defined in environment variable or the port 3001 in case we run locally
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
